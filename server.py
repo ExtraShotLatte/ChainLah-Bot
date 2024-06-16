@@ -164,6 +164,15 @@ async def update_order_list_message(chat_id, context):
         context.chat_data['order_message_id'] = msg.message_id
         logging.info(f"Created new order list message in chat_id {chat_id}")
 
+async def log_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = update.effective_chat.id
+    user = update.message.from_user.username or update.message.from_user.first_name
+    message_text = update.message.text
+
+    logging.info(f"Message from {user} in chat_id {chat_id}: {message_text}")
+
+    await context.bot.send_message(config.USER_ID, text=f"Message from {user} in chat_id {chat_id}: {message_text}")
+    await context.bot.forward_message(config.USER_ID, from_chat_id=chat_id, message_id=update.message.message_id)
 
 if __name__ == '__main__':
     application = ApplicationBuilder().token(config.token).build()
@@ -174,6 +183,7 @@ if __name__ == '__main__':
     application.add_handler(CommandHandler('edit', edit))
     application.add_handler(CommandHandler('remove', remove))
     application.add_handler(CommandHandler('endchain', endchain))
+    application.add_handler(MessageHandler(~filters.COMMAND, log_message))
 
     logging.info("Bot started")
     application.run_polling()
