@@ -164,6 +164,7 @@ async def update_order_list_message(chat_id, context):
         context.chat_data['order_message_id'] = msg.message_id
         logging.info(f"Created new order list message in chat_id {chat_id}")
 
+# For debugging purpose
 async def log_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     user = update.message.from_user.username or update.message.from_user.first_name
@@ -189,3 +190,4 @@ if __name__ == '__main__':
     application.run_polling()
     logging.info("Bot stopped")
 
+ 
