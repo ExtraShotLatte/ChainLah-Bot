@@ -54,17 +54,29 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(chat_id, text="No chain set. Use /setchain <chaintopic> to start one.")
         return
 
+    user = update.message.from_user.username or update.message.from_user.first_name
     order_text = ' '.join(context.args)
 
-    orders[chat_id].append(order_text)
-    logging.info(f"Order added in chat_id {chat_id}: {order_text}")
+    orders[chat_id].append(f"{len(orders[chat_id]) + 1}. {order_text}")
+    logging.info(f"Order added by user {user} in chat_id {chat_id}: {order_text}")
 
     # Delete the user's message
     await context.bot.delete_message(chat_id=chat_id, message_id=update.message.message_id)
-    logging.info(f"Deleted message in chat_id {chat_id}")
+    logging.info(f"Deleted message from user {user} in chat_id {chat_id}")
+
+    # Delete the previous order list message
+    if 'order_message_id' in context.chat_data and context.chat_data['order_message_id']:
+        try:
+            await context.bot.delete_message(chat_id=chat_id, message_id=context.chat_data['order_message_id'])
+        except Exception as e:
+            logging.error(f"Failed to delete previous order list message in chat_id {chat_id}: {e}")
+            await context.bot.send_message(chat_id, text="Failed to delete previous message, are you sure I am admin?.")
 
     # Update the order list message
-    await update_order_list_message(chat_id, context)
+    order_list = f"Order Chain: {chains[chat_id]}\n" + "\n".join(orders[chat_id])
+    msg = await context.bot.send_message(chat_id=chat_id, text=order_list)
+    context.chat_data['order_message_id'] = msg.message_id
+    logging.info(f"Created new order list message in chat_id {chat_id}")
 
 async def edit(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
@@ -104,27 +116,34 @@ async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(chat_id, text="No chain set. Use /setchain <chaintopic> to start one.")
         return
 
-    if len(context.args) < 1:
-        logging.warning(f"Remove command received with insufficient arguments in chat_id: {chat_id}")
-        await context.bot.send_message(chat_id, text="Remove command requires an index. Use /remove <index>.")
+    if len(context.args) < 1 or not context.args[0].isdigit():
+        logging.warning(f"Remove command received with invalid index in chat_id: {chat_id}")
+        await context.bot.send_message(chat_id, text="Remove command received with invalid index. Use /remove <index> to remove an order.")
         return
 
-    try:
-        index = int(context.args[0]) - 1
+    index = int(context.args[0]) - 1
 
-        if 0 <= index < len(orders[chat_id]):
-            removed_order = orders[chat_id].pop(index)
-            logging.info(f"Deleted message in chat_id {chat_id}")
-            await context.bot.delete_message(chat_id=chat_id, message_id=update.message.message_id)
-            logging.info(f"Order at index {index + 1} removed in chat_id {chat_id}: {removed_order}")
-            await update_order_list_message(chat_id, context)
+    if index < 0 or index >= len(orders[chat_id]):
+        logging.warning(f"Remove command received with out-of-range index in chat_id: {chat_id}")
+        await context.bot.send_message(chat_id, text="Remove command received with out-of-range index. Use /remove <index> to remove an order.")
+        return
 
-        else:
-            logging.warning(f"Remove command received with invalid index in chat_id: {chat_id}")
-            await context.bot.send_message(chat_id, text="Invalid index. Use /remove <index>.")
-    except ValueError:
-        logging.warning(f"Remove command received with non-integer index in chat_id: {chat_id}")
-        await context.bot.send_message(chat_id, text="Index must be an integer. Use /remove <index>.")
+    removed_order = orders[chat_id].pop(index)
+    logging.info(f"Order removed in chat_id {chat_id}: {removed_order}")
+
+    # Delete the previous order list message
+    if 'order_message_id' in context.chat_data and context.chat_data['order_message_id']:
+        try:
+            await context.bot.delete_message(chat_id=chat_id, message_id=context.chat_data['order_message_id'])
+        except Exception as e:
+            logging.error(f"Failed to delete previous order list message in chat_id {chat_id}: {e}")
+
+    # Update the order list message
+    order_list = f"Order Chain: {chains[chat_id]}\n" + "\n".join(orders[chat_id])
+    msg = await context.bot.send_message(chat_id=chat_id, text=order_list)
+    context.chat_data['order_message_id'] = msg.message_id
+    logging.info(f"Created new order list message in chat_id {chat_id}")
+
 
 async def endchain(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
