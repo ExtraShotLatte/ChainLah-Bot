@@ -164,6 +164,16 @@ async def update_order_list_message(chat_id, context):
         context.chat_data['order_message_id'] = msg.message_id
         logging.info(f"Created new order list message in chat_id {chat_id}")
 
+async def list_orders(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = update.effective_chat.id
+    if chat_id in chains:
+        order_list = f"Order Chain: {chains[chat_id]}\n" + "\n".join(orders[chat_id])
+        await context.bot.send_message(chat_id=chat_id, text=order_list)
+        logging.info(f"List command received in chat_id {chat_id}")
+    else:
+        logging.warning(f"List command received with no active chain in chat_id: {chat_id}")
+        await context.bot.send_message(chat_id=chat_id, text="No active order chain to list.")
+
 # For debugging purpose
 async def log_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
@@ -184,6 +194,7 @@ if __name__ == '__main__':
     application.add_handler(CommandHandler('edit', edit))
     application.add_handler(CommandHandler('remove', remove))
     application.add_handler(CommandHandler('endchain', endchain))
+    application.add_handler(CommandHandler('list', list_orders))
     application.add_handler(MessageHandler(~filters.COMMAND, log_message))
 
     logging.info("Bot started")
