@@ -1,26 +1,28 @@
 # ChainLah! - Your friendly chain message telegram bot 🤖
 
-This Telegram bot allows users to create, manage, and log order chains within group chats. The bot supports adding, editing, and removing orders, as well as logging actions for auditing purposes.
+This Telegram bot allows users to create, manage, and log message chains within group chats. The bot supports adding, editing, and removing messages, as well as logging actions for auditing purposes.
 
 ## Features ✨
 
 - Set a chain topic
-- Add orders to the chain
-- Edit existing orders
-- Remove orders from the chain
-- End the chain and display the final list of orders
+- Add messages to the chain
+- Edit existing messages
+- Remove messages from the chain
+- End the chain and display the final list of messages
 - Log actions (add, edit, remove) and display the log
 - Commands work seamlessly in group chats
 
 ## Commands 📋
 
-- `/start` - Show instructions on how to use the bot
-- `/setchain <chaintopic>` - Start a new order chain with the specified topic
-- `/add <order>` - Add an order to the current chain
-- `/edit <index> <new_order>` - Edit an order at the specified index
-- `/remove <index>` - Remove an order at the specified index
-- `/endchain` - End the current chain and display the final list of orders along with the action log
-- `/log` - Display the current log of actions
+- `/clstart` - Start the bot and show instructions on how to use the bot
+- `/clhelp` - Display help message
+- `/clset <chain topic>` - Set a new chain topic
+- `/cladd <message>` - Add a message to the current chain
+- `/cledit <index> <new_message>` - Edit a message in the current chain at specified index
+- `/clremove <index>` - Remove a message from the current chain at specified index
+- `/clend` - End the current chain and display the final list of messages along with the action log
+- `/cllog` - Display the current log of actions
+- `/cllist` - List all messages in the current chain
 
 ## Setup 🛠️
 
@@ -65,59 +67,58 @@ This Telegram bot allows users to create, manage, and log order chains within gr
 
 - Set a chain topic:
     ```text
-    /setchain Lunch Orders
+    /clset Lunch Orders
     ```
     Response:
     ```text
     Chain started: Lunch Orders
     ```
 
-- Add an order:
+- Add a message:
     ```text
-    /add Pizza
+    /cladd Pizza
     ```
     Response:
     ```text
-    Order added: Pizza
+    Message added: Pizza
     ```
 
-- Edit an order:
+- Edit an message:
     ```text
-    /edit 1 Pasta
+    /cledit 1 Pasta
     ```
     Response:
     ```text
-    Order at index 1 edited: Pasta
+    Message at index 1 edited: Pasta
     ```
 
-- Remove an order:
+- Remove an message:
     ```text
-    /remove 1
+    /clremove 1
     ```
     Response:
     ```text
-    Order at index 1 removed.
+    Message at index 1 removed.
     ```
 
-- End the chain and display the final list of orders and action log:
+- End the chain and display the final list of messages and action log:
     ```text
-    /endchain
+    /clend
     ```
     Response:
     ```text
-    Order chain ended: Lunch Orders
     Action log:
     User1 added: Pizza
     User1 edited: Pizza -> Pasta
     User1 removed: Pasta
 
-    Final Order Chain: Lunch Orders
+    Final Chain: Lunch Orders
     1 - Pasta
     ```
 
 - Display the current action log:
     ```text
-    /log
+    /cllog
     ```
     Response:
     ```text
