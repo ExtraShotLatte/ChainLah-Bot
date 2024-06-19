@@ -18,7 +18,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print(update)
     await context.bot.send_message(
         chat_id=chat_id,
-        text="Use /setchain <chaintopic> to set the chain topic.\nUse /add <order> to add your order.\nUse /edit <index> <new_order> to edit an order.\nUse /remove <index> to remove an order.\nUse /endchain to end the current chain."
+        text="Use /setchain <chaintopic> to set the chain topic.\nUse /add <order> to add your order.\nUse /edit <index> <new_order> to edit an order.\nUse /remove <index> to remove an order.\nUse /log to see a list of actions your group has made.\nUse /endchain to end the current chain."
     )
 
 async def setchain(update: Update, context: ContextTypes.DEFAULT_TYPE):
