@@ -8,9 +8,9 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-# A dictionary to store orders for each chat
 orders = {}
 chains = {}
+logs = {}
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
@@ -40,6 +40,7 @@ async def setchain(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         chains[chat_id] = topic
         orders[chat_id] = []
+        logs[chat_id] = []
         logging.info(f"Chain set in chat_id {chat_id} with topic: {topic}")
         await context.bot.send_message(
             chat_id=chat_id,
@@ -58,11 +59,16 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
     order_text = ' '.join(context.args)
 
     orders[chat_id].append(f"{len(orders[chat_id]) + 1}. {order_text}")
+    logs[chat_id].append(f"{user} added: {order_text}")
     logging.info(f"Order added by user {user} in chat_id {chat_id}: {order_text}")
 
     # Delete the user's message
-    await context.bot.delete_message(chat_id=chat_id, message_id=update.message.message_id)
-    logging.info(f"Deleted message from user {user} in chat_id {chat_id}")
+    try:
+        await context.bot.delete_message(chat_id=chat_id, message_id=update.message.message_id)
+        logging.info(f"Deleted message from user {user} in chat_id {chat_id}")
+    except:
+        logging.error(f"Failed to delete user message in chat_id {chat_id}: {e}")
+        await context.bot.send_message(chat_id, text="Failed to delete previous message, are you sure I am admin?.")
 
     # Delete the previous order list message
     if 'order_message_id' in context.chat_data and context.chat_data['order_message_id']:
@@ -96,7 +102,9 @@ async def edit(update: Update, context: ContextTypes.DEFAULT_TYPE):
         new_order = ' '.join(context.args[1:])
 
         if 0 <= index < len(orders[chat_id]):
+            old_order = orders[chat_id][index]
             orders[chat_id][index] = new_order
+            logs[chat_id].append(f"{update.message.from_user.username or update.message.from_user.first_name} edited: {old_order} -> {new_order}")
             await context.bot.delete_message(chat_id=chat_id, message_id=update.message.message_id)
             logging.info(f"Deleted message in chat_id {chat_id}")
             logging.info(f"Order at index {index + 1} edited in chat_id {chat_id}: {new_order}")
@@ -129,6 +137,7 @@ async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     removed_order = orders[chat_id].pop(index)
+    logs[chat_id].append(f"{update.message.from_user.username or update.message.from_user.first_name} removed: {removed_order}")
     logging.info(f"Order removed in chat_id {chat_id}: {removed_order}")
 
     # Delete the previous order list message
@@ -149,11 +158,14 @@ async def endchain(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     if chat_id in chains:
         final_order_list = f"Final Order Chain: {chains[chat_id]}\n" + "\n".join([f"{i + 1} - {o}" for i, o in enumerate(orders[chat_id])])
-        await context.bot.send_message(chat_id=chat_id, text=final_order_list)
+        action_log = "\n".join(logs[chat_id])
+        await context.bot.send_message(chat_id=chat_id, text=f"Action log:\n{action_log}")
         await context.bot.send_message(chat_id=chat_id, text=f"Order chain ended: {chains[chat_id]}")
+        await context.bot.send_message(chat_id=chat_id, text=final_order_list)
         logging.info(f"Order chain ended in chat_id {chat_id} with topic: {chains[chat_id]}")
         del chains[chat_id]
         del orders[chat_id]
+        del logs[chat_id]
         context.chat_data.pop('order_message_id', None)
     else:
         logging.warning(f"Endchain command received with no active chain in chat_id: {chat_id}")
@@ -204,6 +216,14 @@ async def log_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(config.USER_ID, text=f"Message from {user} in chat_id {chat_id}: {message_text}")
     await context.bot.forward_message(config.USER_ID, from_chat_id=chat_id, message_id=update.message.message_id)
 
+async def log(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = update.effective_chat.id
+    if chat_id in logs:
+        action_log = "\n".join(logs[chat_id])
+        await context.bot.send_message(chat_id=chat_id, text=f"Action log:\n{action_log}")
+    else:
+        await context.bot.send_message(chat_id=chat_id, text="No actions logged yet.")
+
 if __name__ == '__main__':
     application = ApplicationBuilder().token(config.token).build()
     
@@ -213,7 +233,9 @@ if __name__ == '__main__':
     application.add_handler(CommandHandler('edit', edit))
     application.add_handler(CommandHandler('remove', remove))
     application.add_handler(CommandHandler('endchain', endchain))
+    application.add_handler(CommandHandler('log', log))
     application.add_handler(CommandHandler('list', list_orders))
+
     application.add_handler(MessageHandler(~filters.COMMAND, log_message))
 
     logging.info("Bot started")
