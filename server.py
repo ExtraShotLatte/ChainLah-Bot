@@ -18,7 +18,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print(update)
     await context.bot.send_message(
         chat_id=chat_id,
-        text="Use /setchain <chaintopic> to set the chain topic.\nUse /add <order> to add your order.\nUse /edit <index> <new_order> to edit an order.\nUse /remove <index> to remove an order.\nUse /log to see a list of actions your group has made.\nUse /endchain to end the current chain."
+        text="Use /clsetchain <chaintopic> to set the chain topic.\nUse /cladd <order> to add your order.\nUse /cledit <index> <new_order> to edit an order.\nUse /clremove <index> to remove an order.\nUse /cllog to see a list of actions your group has made.\nUse /clendchain to end the current chain."
     )
 
 async def setchain(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -227,14 +227,14 @@ async def log(update: Update, context: ContextTypes.DEFAULT_TYPE):
 if __name__ == '__main__':
     application = ApplicationBuilder().token(config.token).build()
     
-    application.add_handler(CommandHandler('start', start))
-    application.add_handler(CommandHandler('setchain', setchain))
-    application.add_handler(CommandHandler('add', add))
-    application.add_handler(CommandHandler('edit', edit))
-    application.add_handler(CommandHandler('remove', remove))
-    application.add_handler(CommandHandler('endchain', endchain))
-    application.add_handler(CommandHandler('log', log))
-    application.add_handler(CommandHandler('list', list_orders))
+    application.add_handler(CommandHandler('clstart', start))
+    application.add_handler(CommandHandler('clsetchain', setchain))
+    application.add_handler(CommandHandler('cladd', add))
+    application.add_handler(CommandHandler('cledit', edit))
+    application.add_handler(CommandHandler('clremove', remove))
+    application.add_handler(CommandHandler('clendchain', endchain))
+    application.add_handler(CommandHandler('cllog', log))
+    application.add_handler(CommandHandler('cllist', list_orders))
 
     application.add_handler(MessageHandler(~filters.COMMAND, log_message))
 
