@@ -18,7 +18,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print(update)
     await context.bot.send_message(
         chat_id=chat_id,
-        text="Add me to a group + grant admin rights to create chains for your group! /help to see the commands"
+        text="Add me to a group + grant admin rights to create chains for your group! /clhelp to see the commands"
     )
 
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -27,7 +27,7 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print(update)
     await context.bot.send_message(
         chat_id=chat_id,
-        text="Use /clsetchain <chaintopic> to set the chain topic.\nUse /cladd <order> to add your order.\nUse /cledit <index> <new_order> to edit an order.\nUse /clremove <index> to remove an order.\nUse /cllog to see a list of actions your group has made.\nUse /clendchain to end the current chain."
+        text="Use /clsetchain <chaintopic> to set the chain topic.\nUse /cladd <order> to add your order.\nUse /cledit <index> <new_order> to edit an order.\nUse /clremove <index> to remove an order.\nUse /cllog to see a list of actions your group has made.\nUse /clendchain to end the current chain.\nUse /clhelp To see this help message again!"
     )
 
 async def setchain(update: Update, context: ContextTypes.DEFAULT_TYPE):
