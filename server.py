@@ -18,6 +18,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print(update)
     await context.bot.send_message(
         chat_id=chat_id,
+        text="Add me to a group + grant admin rights to create chains for your group! /help to see the commands"
+    )
+
+async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = update.effective_chat.id
+    logging.info(f"Start command received from chat_id: {chat_id}")
+    print(update)
+    await context.bot.send_message(
+        chat_id=chat_id,
         text="Use /clsetchain <chaintopic> to set the chain topic.\nUse /cladd <order> to add your order.\nUse /cledit <index> <new_order> to edit an order.\nUse /clremove <index> to remove an order.\nUse /cllog to see a list of actions your group has made.\nUse /clendchain to end the current chain."
     )
 
@@ -228,6 +237,7 @@ if __name__ == '__main__':
     application = ApplicationBuilder().token(config.token).build()
     
     application.add_handler(CommandHandler('clstart', start))
+    application.add_handler(CommandHandler('clhelp', help))
     application.add_handler(CommandHandler('clsetchain', setchain))
     application.add_handler(CommandHandler('cladd', add))
     application.add_handler(CommandHandler('cledit', edit))
